@@ -23,7 +23,7 @@ public class EnemyCharacter : CharacterBase
             if (IsAdjacent(target.gridPosition))
             {
                 Debug.Log($"{characterName} attacks {target.characterName}!");
-                // TODO: attack logic, could cost AP
+                target.TakeDamage(attackDamage);
                 yield return new WaitForSeconds(0.5f); // simulate attack delay
                 break; // For now: attack ends turn
             }
@@ -43,7 +43,7 @@ public class EnemyCharacter : CharacterBase
             }
 
             // Wait a short time before next move (optional for pacing)
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(0.1f);
         }
 
         EndTurn(); // End after all actions or early stop
@@ -69,20 +69,24 @@ public class EnemyCharacter : CharacterBase
 
     PlayerCharacter FindNearestPlayer()
     {
-        PlayerCharacter[] players = FindObjectsByType<PlayerCharacter>(FindObjectsSortMode.None);
         PlayerCharacter closest = null;
         float closestDist = Mathf.Infinity;
 
-        foreach (var player in players)
+        foreach (var character in GameManager.Instance.GetCharacters())
         {
-            float dist = Vector2Int.Distance(gridPosition, player.gridPosition);
-            if (dist < closestDist)
+            if (character is PlayerCharacter player)
             {
-                closest = player;
-                closestDist = dist;
+                Vector2Int diff = gridPosition - player.gridPosition;
+                float dist = diff.sqrMagnitude;
+                if (dist < closestDist)
+                {
+                    closest = player;
+                    closestDist = dist;
+                }
             }
         }
 
         return closest;
     }
+
 }

@@ -9,13 +9,17 @@ public class GameManager : MonoBehaviour
     [Header("UI")]
     public TextMeshProUGUI turnIndicator;
     public TextMeshProUGUI actionPointIndicator;
+    public GameObject gameOverScreen;
+    public GameObject damagePopupPrefab;
 
     [Header("Map Settings")]
     public int height = 10;
     public int width = 16;
     public float tileSize = 1f;
+
     [Header("Tile Prefabs")]
     public GameObject[] tilePrefabs;
+
     [Header("Highlighting")]
     public GameObject moveHighlightPrefab;
 
@@ -31,6 +35,8 @@ public class GameManager : MonoBehaviour
     private List<GameObject> activeHighlights = new List<GameObject>();
 
     private CharacterBase selectedCharacter;
+
+    public CharacterBase[] GetCharacters() => turnOrder;
 
     void Awake()
     {
@@ -147,17 +153,17 @@ public class GameManager : MonoBehaviour
     {
         currentTurnIndex = 0;
         turnOrder[currentTurnIndex].StartTurn();
-        // UpdateTurnUI();
+        UpdateTurnUI();
     }
 
     public void NextTurn()
     {
         currentTurnIndex = (currentTurnIndex + 1) % turnOrder.Length;
         turnOrder[currentTurnIndex].StartTurn();
-        // UpdateTurnUI();
+        UpdateTurnUI();
     }
 
-    void Update()
+    void UpdateTurnUI()
     {
         if (turnOrder != null && turnIndicator != null)
         {
@@ -205,9 +211,33 @@ public class GameManager : MonoBehaviour
 
     public void TryMoveSelectedCharacter(Vector2Int target)
     {
+        if (selectedCharacter == null) return;
+
+        if (!IsWalkable(target)) return;
+
         ClearHighlights();
         selectedCharacter.MoveTo(target);
         selectedCharacter = null;
     }
+
+    public void RemoveCharacter(CharacterBase character)
+    {
+        List<CharacterBase> updatedList = new List<CharacterBase>(turnOrder);
+        updatedList.Remove(character);
+        turnOrder = updatedList.ToArray();
+
+        if (turnOrder.Length == 0)
+        {
+            Debug.Log("All characters are dead. Game Over!");
+            return;
+        }
+
+        // Fix current index if needed
+        if (currentTurnIndex >= turnOrder.Length)
+        {
+            currentTurnIndex = 0;
+        }
+    }
+
 
 }
