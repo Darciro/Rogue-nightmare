@@ -5,175 +5,121 @@ using System.Collections.Generic;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
+    public float tileSize = 1f;
 
     [Header("UI")]
     public TextMeshProUGUI turnIndicator;
+    public TextMeshProUGUI turnsOrder;
     public TextMeshProUGUI actionPointIndicator;
     public GameObject gameOverScreen;
     public GameObject damagePopupPrefab;
 
-    [Header("Map Settings")]
-    public int height = 10;
-    public int width = 16;
-    public float tileSize = 1f;
-
-    [Header("Tile Prefabs")]
-    public GameObject[] tilePrefabs;
-
-    [Header("Highlighting")]
+    [Header("Dungeon Settings")]
+    public Transform dungeonWrapper;
+    public DungeonGenerator dungeonGenerator;
     public GameObject moveHighlightPrefab;
 
     [Header("Entities")]
+    public Transform entityParent;
+    public GameObject playerPrefab;
     public GameObject[] enemyPrefabs;
     public GameObject[] pickupPrefabs;
     public GameObject[] wallPrefabs;
 
-    private CharacterBase[] turnOrder;
-    private int currentTurnIndex = 0;
-    private Tile[,] tiles;
+    [Header("Turns Management")]
+    public TurnManager turnManager;
 
     private List<GameObject> activeHighlights = new List<GameObject>();
-
     private CharacterBase selectedCharacter;
-
-    public CharacterBase[] GetCharacters() => turnOrder;
 
     void Awake()
     {
-        if (Instance == null)
-            Instance = this;
-        else
-            Destroy(gameObject);
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
     }
 
     void Start()
     {
-        CenterCamera();
-        GenerateMap();
-        PlaceEntities();
+        // Draws our dungeon
+        dungeonGenerator.GenerateDungeon();
 
-        turnOrder = FindObjectsByType<CharacterBase>(FindObjectsSortMode.None);
-        StartTurns();
+        // Invoke the chars
+        SpawnEntities();
+
+        // Initialize turns order
+        CharacterBase[] characters = FindObjectsByType<CharacterBase>(FindObjectsSortMode.None);
+        turnManager.InitializeTurnOrder(new List<CharacterBase>(characters));
+        turnManager.StartFirstTurn();
     }
 
-    // ─────────────── GRID ───────────────
-
-    void GenerateMap()
+    void SpawnEntities()
     {
-        tiles = new Tile[width, height];
+        List<Vector2Int> floorTiles = new List<Vector2Int>(dungeonGenerator.GetFloorPositions());
 
-        for (int x = 0; x < width; x++)
+        // Spawn player
+        Vector2Int playerPos = GetAndRemoveRandomTile(floorTiles);
+        GameObject player = Instantiate(playerPrefab, GridToWorld(playerPos), Quaternion.identity, entityParent);
+        player.GetComponent<CharacterBase>().gridPosition = playerPos;
+
+        // Place camera above the player
+        Camera.main.GetComponent<CameraFollow>().SetTarget(player.transform);
+
+        // Spawn enemies
+        int enemyCount = 3;
+        for (int i = 0; i < enemyCount; i++)
         {
-            for (int y = 0; y < height; y++)
-            {
-                Vector3 worldPos = new Vector3(x * tileSize, y * tileSize, 0);
-                GameObject randomPrefab = tilePrefabs[Random.Range(0, tilePrefabs.Length)];
-                GameObject tileGO = Instantiate(randomPrefab, worldPos, Quaternion.identity);
-                tileGO.transform.SetParent(transform);
-
-                Tile tile = tileGO.GetComponent<Tile>();
-                tile.Init(new Vector2Int(x, y), true);
-                tiles[x, y] = tile;
-            }
-        }
-
-        // CenterCamera();
-    }
-
-    void CenterCamera()
-    {
-        float cx = (width - 1) * tileSize / 2f;
-        float cy = (height - 1) * tileSize / 2f - 0.5f;
-        Camera.main.transform.position = new Vector3(cx, cy, -10f);
-    }
-
-    public bool IsWalkable(Vector2Int pos)
-    {
-        return pos.x >= 0 && pos.x < width &&
-               pos.y >= 0 && pos.y < height &&
-               tiles[pos.x, pos.y].walkable &&
-               !tiles[pos.x, pos.y].IsOccupied();
-    }
-
-    public Vector3 GridToWorld(Vector2Int gridPos) =>
-        new Vector3(gridPos.x * tileSize, gridPos.y * tileSize, 0);
-
-    public Vector2Int WorldToGrid(Vector3 worldPos) =>
-        new Vector2Int(Mathf.RoundToInt(worldPos.x / tileSize), Mathf.RoundToInt(worldPos.y / tileSize));
-
-    public Tile GetTile(Vector2Int pos) => tiles[pos.x, pos.y];
-
-    // ─────────────── ENTITY PLACEMENT ───────────────
-
-    void PlaceEntities()
-    {
-        for (int i = 0; i < 2; i++) AddRandomEntity(enemyPrefabs);
-        for (int i = 0; i < 2; i++) AddRandomEntity(pickupPrefabs);
-        for (int i = 0; i < 5; i++) AddRandomEntity(wallPrefabs);
-    }
-
-    void AddRandomEntity(GameObject[] prefabs)
-    {
-        if (prefabs.Length == 0) return;
-
-        Vector2Int pos = GetRandomFreeTile();
-        GameObject prefab = prefabs[Random.Range(0, prefabs.Length)];
-        AddEntity(prefab, pos);
-    }
-
-    bool AddEntity(GameObject prefab, Vector2Int pos)
-    {
-        if (!IsWalkable(pos)) return false;
-
-        Vector3 worldPos = GridToWorld(pos);
-        GameObject obj = Instantiate(prefab, worldPos, Quaternion.identity);
-        GetTile(pos).occupant = obj;
-
-        // If it's a character, update its grid position
-        CharacterBase cb = obj.GetComponent<CharacterBase>();
-        if (cb != null) cb.gridPosition = pos;
-
-        return true;
-    }
-
-    Vector2Int GetRandomFreeTile()
-    {
-        while (true)
-        {
-            int x = Random.Range(0, width);
-            int y = Random.Range(0, height);
-            Vector2Int pos = new Vector2Int(x, y);
-            if (IsWalkable(pos)) return pos;
+            Vector2Int pos = GetAndRemoveRandomTile(floorTiles);
+            GameObject prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
+            GameObject enemy = Instantiate(prefab, GridToWorld(pos), Quaternion.identity, entityParent);
+            enemy.GetComponent<CharacterBase>().gridPosition = pos;
         }
     }
 
-    // ─────────────── TURNS ───────────────
-
-    void StartTurns()
+    Vector3 GridToWorld(Vector2Int pos)
     {
-        currentTurnIndex = 0;
-        turnOrder[currentTurnIndex].StartTurn();
-        UpdateTurnUI();
+        return new Vector3(pos.x, pos.y, 0f);
+    }
+
+    Vector2Int GetAndRemoveRandomTile(List<Vector2Int> tiles)
+    {
+        int index = Random.Range(0, tiles.Count);
+        Vector2Int tile = tiles[index];
+        tiles.RemoveAt(index);
+        return tile;
     }
 
     public void NextTurn()
     {
-        currentTurnIndex = (currentTurnIndex + 1) % turnOrder.Length;
-        turnOrder[currentTurnIndex].StartTurn();
+        turnManager.NextTurn();
         UpdateTurnUI();
+        UpdateTurnQueueUI();
     }
 
     void UpdateTurnUI()
     {
-        if (turnOrder != null && turnIndicator != null)
+        if (turnIndicator != null && turnManager.CurrentCharacter != null)
         {
-            turnIndicator.text = $"{turnOrder[currentTurnIndex].characterName}'s Turn";
+            turnIndicator.text = $"{turnManager.CurrentCharacter.characterName}'s Turn";
         }
 
-        if (actionPointIndicator != null)
+        if (actionPointIndicator != null && turnManager.CurrentCharacter != null)
         {
-            actionPointIndicator.text = $"A/P: {turnOrder[currentTurnIndex].currentActionPoints}";
+            actionPointIndicator.text = $"A/P: {turnManager.CurrentCharacter.currentActionPoints}";
         }
+    }
+
+    void UpdateTurnQueueUI()
+    {
+        var queue = turnManager.GetUpcomingTurns(5);
+        string text = "Turn Order:\n";
+        for (int i = 0; i < queue.Count; i++)
+        {
+            text += $"{i + 1}. {queue[i].characterName}\n";
+        }
+
+
+        // Assign to a TextMeshProUGUI component (you can expose it via [Header("UI")] section)
+        turnsOrder.text = text;
     }
 
     public void ShowMoveRange(CharacterBase character, int range)
@@ -192,7 +138,7 @@ public class GameManager : MonoBehaviour
 
                 if (distance <= range && IsWalkable(target))
                 {
-                    Vector3 highlightPos = new Vector3(target.x * tileSize + 0.5f, target.y * tileSize - 0.5f, -1f); // Note: Z = -1
+                    Vector3 highlightPos = new Vector3((target.x + 0.5f) * tileSize, (target.y - 0.5f) * tileSize, -1f);
                     GameObject highlight = Instantiate(moveHighlightPrefab, highlightPos, Quaternion.identity);
                     highlight.GetComponent<TileHighlight>().Init(target);
                     activeHighlights.Add(highlight);
@@ -222,22 +168,79 @@ public class GameManager : MonoBehaviour
 
     public void RemoveCharacter(CharacterBase character)
     {
-        List<CharacterBase> updatedList = new List<CharacterBase>(turnOrder);
-        updatedList.Remove(character);
-        turnOrder = updatedList.ToArray();
+        turnManager.RemoveFromTurnOrder(character);
 
-        if (turnOrder.Length == 0)
+        if (turnManager.TurnOrder.Count == 0)
         {
             Debug.Log("All characters are dead. Game Over!");
-            return;
-        }
-
-        // Fix current index if needed
-        if (currentTurnIndex >= turnOrder.Length)
-        {
-            currentTurnIndex = 0;
+            gameOverScreen.SetActive(true);
         }
     }
 
+    public bool IsWalkable(Vector2Int pos)
+    {
+        // Must be in floorPositions
+        return dungeonGenerator.GetFloorPositions().Contains(pos) && !IsTileOccupied(pos);
+    }
+
+    public bool IsTileOccupied(Vector2Int pos)
+    {
+        foreach (var character in turnManager.TurnOrder)
+        {
+            if (character.gridPosition == pos)
+                return true;
+        }
+        return false;
+    }
+
+    public void ShowAttackRange(CharacterBase character, int range)
+    {
+        ClearHighlights();
+        selectedCharacter = character;
+
+        Vector2Int origin = character.gridPosition;
+
+        for (int x = -range; x <= range; x++)
+        {
+            for (int y = -range; y <= range; y++)
+            {
+                Vector2Int target = origin + new Vector2Int(x, y);
+                int distance = Mathf.Abs(x) + Mathf.Abs(y);
+
+                if (distance <= range && IsTileOccupied(target))
+                {
+                    Vector3 highlightPos = new Vector3(target.x + 0.5f, target.y + 0.5f, -1f);
+                    GameObject highlight = Instantiate(moveHighlightPrefab, highlightPos, Quaternion.identity);
+                    highlight.GetComponent<TileHighlight>().Init(target, true); // mark as attackable
+                    activeHighlights.Add(highlight);
+                }
+            }
+        }
+    }
+
+    public void TryAttackTarget(Vector2Int target)
+    {
+        ClearHighlights();
+
+        CharacterBase attacker = selectedCharacter;
+        CharacterBase defender = null;
+
+        foreach (var character in turnManager.TurnOrder)
+        {
+            if (character.gridPosition == target && character != attacker)
+            {
+                defender = character;
+                break;
+            }
+        }
+
+        if (defender != null)
+        {
+            defender.TakeDamage(attacker.attackDamage);
+            attacker.currentActionPoints--; // cost 1 AP to attack
+        }
+
+        selectedCharacter = null;
+    }
 
 }

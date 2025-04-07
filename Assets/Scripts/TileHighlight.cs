@@ -2,15 +2,24 @@ using UnityEngine;
 
 public class TileHighlight : MonoBehaviour
 {
-    public Vector2Int gridPos;
+    private Vector2Int gridPos;
+    private bool isAttack;
 
-    public void Init(Vector2Int pos)
+    public void Init(Vector2Int pos, bool attack = false)
     {
         gridPos = pos;
+        isAttack = attack;
+
+        // change color based on type
+        GetComponent<SpriteRenderer>().color = attack ? Color.red : Color.cyan;
     }
 
     private void OnMouseDown()
     {
-        GameManager.Instance.TryMoveSelectedCharacter(gridPos);
+        if (isAttack)
+            GameManager.Instance.TryAttackTarget(gridPos);
+        else
+            GameManager.Instance.TryMoveSelectedCharacter(gridPos);
     }
+
 }

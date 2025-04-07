@@ -134,7 +134,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.9, y: 0.59}
+  m_Size: {x: 0.9, y: 0.9}
   m_EdgeRadius: 0
 --- !u!50 &710527775019094345
 Rigidbody2D:
@@ -162,7 +162,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 4
+  m_Constraints: 7
 --- !u!114 &9100895594533254713
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -175,6 +175,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d9f03fb919963b4698c83a4d25b8b6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHP: 10
+  currentHP: 0
+  attackDamage: 2
+  maxActionPoints: 3
+  currentActionPoints: 0
   characterName: Darciro
   isMyTurn: 0
   gridPosition: {x: 0, y: 0}
+  moveSpeed: 5

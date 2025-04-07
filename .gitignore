@@ -39,3 +39,6 @@ Thumbs.db
 *.pbxproj
 *.xcuserdata
 *.tmproj
+
+# ========== Imports ==========
+Assets/_Imports/

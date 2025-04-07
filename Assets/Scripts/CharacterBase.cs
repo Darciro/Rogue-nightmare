@@ -4,10 +4,18 @@ using UnityEngine;
 public abstract class CharacterBase : MonoBehaviour
 {
 
+    [Header("Attributes")]
+    public int Strength = 1;        // Melee damage
+    public int Dexterity = 1;       // Ranged damage
+    public int Constitution = 1;    // Health points
+    public int Intelligence = 1;    // Magic
+    public int Percepction = 1;     // Senses
+
     [Header("Stats")]
     public int maxHP = 10;
     public int currentHP;
     public int attackDamage = 2;
+    public int attackRange = 1;
 
 
     [Header("Turn System")]
@@ -20,7 +28,7 @@ public abstract class CharacterBase : MonoBehaviour
 
     protected virtual void Start()
     {
-        gridPosition = GameManager.Instance.WorldToGrid(transform.position);
+        // gridPosition = GameManager.Instance.WorldToGrid(transform.position);
         currentHP = maxHP;
     }
 
@@ -54,16 +62,7 @@ public abstract class CharacterBase : MonoBehaviour
 
     public IEnumerator SmoothMove(Vector2Int target)
     {
-        /* if (currentActionPoints <= 0)
-        {
-            Debug.Log($"{characterName} has no action points left!");
-            yield break;
-        }*/
-
-        // 🧼 CLEAR current tile occupant
-        GameManager.Instance.GetTile(gridPosition).occupant = null;
-
-        Vector3 targetWorld = GameManager.Instance.GridToWorld(target);
+        Vector3 targetWorld = new Vector3(target.x, target.y, 0f);
 
         while ((transform.position - targetWorld).sqrMagnitude > 0.001f)
         {
@@ -74,17 +73,14 @@ public abstract class CharacterBase : MonoBehaviour
         transform.position = targetWorld;
         gridPosition = target;
 
-        GameManager.Instance.GetTile(gridPosition).occupant = this.gameObject;
-
         currentActionPoints--;
 
         if (isMyTurn && this is PlayerCharacter && currentActionPoints > 0)
         {
             GameManager.Instance.ShowMoveRange(this, currentActionPoints);
         }
-
-
     }
+
 
     public void TakeDamage(int damage)
     {
@@ -107,7 +103,7 @@ public abstract class CharacterBase : MonoBehaviour
         GameManager.Instance.RemoveCharacter(this);
 
         // Remove from tile
-        GameManager.Instance.GetTile(gridPosition).occupant = null;
+        // GameManager.Instance.GetTile(gridPosition).occupant = null;
 
         // Destroy game object
         Destroy(gameObject);

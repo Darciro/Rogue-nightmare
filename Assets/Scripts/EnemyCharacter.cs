@@ -72,12 +72,11 @@ public class EnemyCharacter : CharacterBase
         PlayerCharacter closest = null;
         float closestDist = Mathf.Infinity;
 
-        foreach (var character in GameManager.Instance.GetCharacters())
+        foreach (var character in GameManager.Instance.turnManager.TurnOrder)
         {
             if (character is PlayerCharacter player)
             {
-                Vector2Int diff = gridPosition - player.gridPosition;
-                float dist = diff.sqrMagnitude;
+                float dist = Vector2Int.Distance(gridPosition, player.gridPosition);
                 if (dist < closestDist)
                 {
                     closest = player;
@@ -88,5 +87,6 @@ public class EnemyCharacter : CharacterBase
 
         return closest;
     }
+
 
 }

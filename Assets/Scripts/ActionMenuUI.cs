@@ -38,13 +38,17 @@ public class ActionMenuUI : MonoBehaviour
             GameManager.Instance.ShowMoveRange(player, player.currentActionPoints);
         }
 
-
-        /* if (this is PlayerCharacter)
-        {
-            GameManager.Instance.ShowMoveRange(this, currentActionPoints);
-        } */
-
         Hide();
+    }
+
+    public void OnAttackPressed()
+    {
+        /* if (selectedCharacter is PlayerCharacter player)
+        {
+            GameManager.Instance.ShowAttackRange(player, player.attackRange);
+        }
+
+        Hide(); */
     }
 
     public void OnCancelPressed()
@@ -52,5 +56,4 @@ public class ActionMenuUI : MonoBehaviour
         Hide();
     }
 
-    // TODO: Hook up attack and item later
 }
