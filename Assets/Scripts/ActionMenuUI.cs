@@ -10,50 +10,68 @@ public class ActionMenuUI : MonoBehaviour
     public Button attackButton;
     public Button itemButton;
     public Button cancelButton;
-
-    private CharacterBase selectedCharacter;
+    public GameObject playerStatsUI;
 
     void Awake()
     {
         Instance = this;
         gameObject.SetActive(false);
+        playerStatsUI.SetActive(false);
     }
 
     public void Show(CharacterBase character)
     {
-        selectedCharacter = character;
         gameObject.SetActive(true);
+        playerStatsUI.SetActive(true);
+        ShowActionButtons();
     }
 
-    public void Hide()
+    public void HideMenu()
     {
         gameObject.SetActive(false);
-        selectedCharacter = null;
     }
 
     public void OnMovePressed()
     {
-        if (selectedCharacter is PlayerCharacter player)
+        if (GameManager.Instance.turnManager.CurrentCharacter is PlayerCharacter player)
         {
             GameManager.Instance.ShowMoveRange(player, player.currentActionPoints);
         }
 
-        Hide();
+        ShowCancelOnly();
     }
 
     public void OnAttackPressed()
     {
-        /* if (selectedCharacter is PlayerCharacter player)
+        if (GameManager.Instance.turnManager.CurrentCharacter is PlayerCharacter player)
         {
             GameManager.Instance.ShowAttackRange(player, player.attackRange);
         }
 
-        Hide(); */
+        ShowCancelOnly();
     }
 
     public void OnCancelPressed()
     {
-        Hide();
+        GameManager.Instance.ClearHighlights();
+        ShowActionButtons();
     }
+
+    public void ShowActionButtons()
+    {
+        moveButton.gameObject.SetActive(true);
+        attackButton.gameObject.SetActive(true);
+        itemButton.gameObject.SetActive(true);
+        cancelButton.gameObject.SetActive(false);
+    }
+
+    public void ShowCancelOnly()
+    {
+        moveButton.gameObject.SetActive(false);
+        attackButton.gameObject.SetActive(false);
+        itemButton.gameObject.SetActive(false);
+        cancelButton.gameObject.SetActive(true);
+    }
+
 
 }

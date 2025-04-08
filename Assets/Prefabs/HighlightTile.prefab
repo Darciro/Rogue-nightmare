@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7810655734964955209}
   - component: {fileID: 4324755765476052597}
   - component: {fileID: 8375814602238733698}
+  - component: {fileID: -1038201099636337808}
   m_Layer: 0
   m_Name: HighlightTile
   m_TagString: Untagged
@@ -79,7 +80,7 @@ SpriteRenderer:
   m_SortingLayer: 1
   m_SortingOrder: 1
   m_Sprite: {fileID: 7482667652216324306, guid: db750325989564987a34393247d883b4, type: 3}
-  m_Color: {r: 0.25, g: 0.30989712, b: 1, a: 0.5882353}
+  m_Color: {r: 0.25, g: 0.30989712, b: 1, a: 0.039215688}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -101,7 +102,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e8fadeb5cb2d2f49ba79e5f5d3f5fac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridPos: {x: 0, y: 0}
 --- !u!61 &8375814602238733698
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -148,3 +148,16 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &-1038201099636337808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5003580271780544440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4974428e01282045abb72fe52bebff5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  arrowPrefab: {fileID: 4231475833277632308, guid: cf406dfe8bfcf3f408b8e57d20733b2d, type: 3}

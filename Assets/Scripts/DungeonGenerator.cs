@@ -14,6 +14,7 @@ public class DungeonGenerator : MonoBehaviour
     public GameObject wallPrefab;
 
     private HashSet<Vector2Int> floorPositions = new HashSet<Vector2Int>();
+    private Dictionary<Vector2Int, Tile> tiles = new Dictionary<Vector2Int, Tile>();
 
     public void GenerateDungeon()
     {
@@ -60,12 +61,27 @@ public class DungeonGenerator : MonoBehaviour
         floorPositions.Add(end);
     }
 
+    public Tile GetTile(Vector2Int pos)
+    {
+        tiles.TryGetValue(pos, out var tile);
+        return tile;
+    }
+
+
     void PaintTiles()
     {
         foreach (var pos in floorPositions)
         {
-            Instantiate(floorPrefab, new Vector3(pos.x, pos.y, 0), Quaternion.identity, GameManager.Instance.dungeonWrapper);
+            GameObject tileGO = Instantiate(floorPrefab, new Vector3(pos.x, pos.y, 0), Quaternion.identity, GameManager.Instance.dungeonWrapper);
+
+            Tile tile = tileGO.GetComponent<Tile>();
+            if (tile != null)
+            {
+                tiles[pos] = tile;
+                tile.gridPosition = pos;
+            }
         }
+
 
         HashSet<Vector2Int> wallPositions = new HashSet<Vector2Int>();
         foreach (var pos in floorPositions)

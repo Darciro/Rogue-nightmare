@@ -3,6 +3,18 @@ using System.Collections;
 
 public class EnemyCharacter : CharacterBase
 {
+
+    private void OnMouseEnter()
+    {
+        EnemyTooltipUI.Instance.Show(this);
+    }
+
+    private void OnMouseExit()
+    {
+        EnemyTooltipUI.Instance.Hide();
+    }
+
+
     protected override void OnTurnStart()
     {
         Debug.Log($"{characterName}'s turn (AI)");

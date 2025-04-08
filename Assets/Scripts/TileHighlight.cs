@@ -14,6 +14,26 @@ public class TileHighlight : MonoBehaviour
         GetComponent<SpriteRenderer>().color = attack ? Color.red : Color.cyan;
     }
 
+    private void OnMouseEnter()
+    {
+        if (!isAttack && GameManager.Instance.SelectedCharacter != null)
+        {
+            var origin = GameManager.Instance.SelectedCharacter.gridPosition;
+            var path = GameManager.Instance.FindPath(origin, gridPos, GameManager.Instance.SelectedCharacter.currentActionPoints);
+
+            if (path != null)
+            {
+                PathPreviewManager.Instance.ShowPath(path);
+            }
+        }
+    }
+
+    private void OnMouseExit()
+    {
+        PathPreviewManager.Instance.Clear();
+    }
+
+
     private void OnMouseDown()
     {
         if (isAttack)

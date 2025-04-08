@@ -1,5 +1,7 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+
 
 public abstract class CharacterBase : MonoBehaviour
 {
@@ -13,14 +15,19 @@ public abstract class CharacterBase : MonoBehaviour
 
     [Header("Stats")]
     public int maxHP = 10;
-    public int currentHP;
+    public int currentHP = 10;
+
+    public int maxActionPoints = 3;
+    public int currentActionPoints = 3;
+
+    public int foodPoints = 100;
+    public int waterPoints = 100;
+
     public int attackDamage = 2;
     public int attackRange = 1;
 
 
     [Header("Turn System")]
-    public int maxActionPoints = 3;
-    public int currentActionPoints;
     public string characterName;
     public bool isMyTurn;
     public Vector2Int gridPosition;
@@ -51,13 +58,37 @@ public abstract class CharacterBase : MonoBehaviour
 
     public void MoveTo(Vector2Int target)
     {
-        if (currentActionPoints <= 0)
+        var path = GameManager.Instance.FindPath(gridPosition, target, currentActionPoints);
+        if (path == null) return;
+
+        StartCoroutine(MoveAlongPath(path));
+    }
+
+    public IEnumerator MoveAlongPath(List<Vector2Int> path)
+    {
+        foreach (Vector2Int step in path)
         {
-            Debug.Log($"{characterName} has no action points left, can not move!");
-            return;
+            if (currentActionPoints <= 0) break;
+
+            // Clear old tile
+            GameManager.Instance.GetTile(gridPosition).occupant = null;
+
+            Vector3 worldPos = GameManager.Instance.GridToWorld(step);
+
+            while ((transform.position - worldPos).sqrMagnitude > 0.01f)
+            {
+                transform.position = Vector3.MoveTowards(transform.position, worldPos, moveSpeed * Time.deltaTime);
+                yield return null;
+            }
+
+            gridPosition = step;
+            GameManager.Instance.GetTile(gridPosition).occupant = this.gameObject;
+            currentActionPoints--;
+
+            GameManager.Instance.UpdatePlayerUI();
         }
 
-        StartCoroutine(SmoothMove(target));
+        GameManager.Instance.ClearHighlights();
     }
 
     public IEnumerator SmoothMove(Vector2Int target)

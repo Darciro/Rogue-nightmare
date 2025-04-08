@@ -1,0 +1,12 @@
+#enemy-tooltip {
+    background-color: rgba(0, 0, 0, 0.9);
+    padding: 10px;
+    border-radius: 6px;
+    width: 200px;
+    color: white;
+    font-size: 13px;
+    position: absolute;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+}

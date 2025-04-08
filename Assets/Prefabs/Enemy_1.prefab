@@ -175,6 +175,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95ec05943f56139448257347e292fbcc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Strength: 1
+  Dexterity: 1
+  Constitution: 1
+  Intelligence: 1
+  Percepction: 1
+  maxHP: 3
+  currentHP: 3
+  maxActionPoints: 3
+  currentActionPoints: 3
+  foodPoints: 100
+  waterPoints: 100
+  attackDamage: 2
+  attackRange: 1
   characterName: Zombie 1
   isMyTurn: 0
   gridPosition: {x: 0, y: 0}
+  moveSpeed: 5

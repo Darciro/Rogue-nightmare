@@ -14,6 +14,11 @@ public class GameManager : MonoBehaviour
     public GameObject gameOverScreen;
     public GameObject damagePopupPrefab;
 
+    [Header("Player UI")]
+    public TextMeshProUGUI healthPointText;
+    public TextMeshProUGUI foodPointText;
+    public TextMeshProUGUI waterPointText;
+
     [Header("Dungeon Settings")]
     public Transform dungeonWrapper;
     public DungeonGenerator dungeonGenerator;
@@ -31,6 +36,8 @@ public class GameManager : MonoBehaviour
 
     private List<GameObject> activeHighlights = new List<GameObject>();
     private CharacterBase selectedCharacter;
+
+    public CharacterBase SelectedCharacter => selectedCharacter;
 
     void Awake()
     {
@@ -75,7 +82,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    Vector3 GridToWorld(Vector2Int pos)
+    public Vector3 GridToWorld(Vector2Int pos)
     {
         return new Vector3(pos.x, pos.y, 0f);
     }
@@ -92,8 +99,21 @@ public class GameManager : MonoBehaviour
     {
         turnManager.NextTurn();
         UpdateTurnUI();
-        UpdateTurnQueueUI();
+        // UpdateTurnQueueUI();
     }
+
+    public void UpdatePlayerUI()
+    {
+        // Get the current player
+        var player = turnManager.CurrentCharacter as PlayerCharacter;
+        if (player == null) return;
+
+        healthPointText.text = $"HP: {player.currentHP}/{player.maxHP}";
+        actionPointIndicator.text = $"A/P: {player.currentActionPoints}/{player.maxActionPoints}";
+        foodPointText.text = $"Food: {player.foodPoints}/100";
+        waterPointText.text = $"Water: {player.waterPoints}/100";
+    }
+
 
     void UpdateTurnUI()
     {
@@ -104,8 +124,10 @@ public class GameManager : MonoBehaviour
 
         if (actionPointIndicator != null && turnManager.CurrentCharacter != null)
         {
-            actionPointIndicator.text = $"A/P: {turnManager.CurrentCharacter.currentActionPoints}";
+            actionPointIndicator.text = $"A/P: {turnManager.CurrentCharacter.currentActionPoints}/3";
         }
+
+        UpdatePlayerUI(); // ✅ Add this
     }
 
     void UpdateTurnQueueUI()
@@ -138,13 +160,70 @@ public class GameManager : MonoBehaviour
 
                 if (distance <= range && IsWalkable(target))
                 {
-                    Vector3 highlightPos = new Vector3((target.x + 0.5f) * tileSize, (target.y - 0.5f) * tileSize, -1f);
-                    GameObject highlight = Instantiate(moveHighlightPrefab, highlightPos, Quaternion.identity);
-                    highlight.GetComponent<TileHighlight>().Init(target);
-                    activeHighlights.Add(highlight);
+                    var path = FindPath(origin, target, range);
+                    if (path != null)
+                    {
+                        Vector3 highlightPos = new Vector3(target.x + 0.5f, target.y - 0.5f, -1f);
+                        GameObject highlight = Instantiate(moveHighlightPrefab, highlightPos, Quaternion.identity);
+                        highlight.GetComponent<TileHighlight>().Init(target);
+                        activeHighlights.Add(highlight);
+                    }
+                }
+
+            }
+        }
+    }
+
+    public List<Vector2Int> FindPath(Vector2Int start, Vector2Int goal, int maxRange)
+    {
+        Queue<Vector2Int> frontier = new Queue<Vector2Int>();
+        Dictionary<Vector2Int, Vector2Int> cameFrom = new Dictionary<Vector2Int, Vector2Int>();
+
+        frontier.Enqueue(start);
+        cameFrom[start] = start;
+
+        while (frontier.Count > 0)
+        {
+            Vector2Int current = frontier.Dequeue();
+
+            if (current == goal) break;
+
+            foreach (var dir in new[] {
+            Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
+        })
+            {
+                Vector2Int next = current + dir;
+
+                int distance = Mathf.Abs(next.x - start.x) + Mathf.Abs(next.y - start.y);
+                if (distance > maxRange || cameFrom.ContainsKey(next)) continue;
+
+                if (IsWalkable(next) || next == goal)
+                {
+                    frontier.Enqueue(next);
+                    cameFrom[next] = current;
                 }
             }
         }
+
+        // Reconstruct path
+        if (!cameFrom.ContainsKey(goal)) return null;
+
+        List<Vector2Int> path = new List<Vector2Int>();
+        Vector2Int step = goal;
+
+        while (step != start)
+        {
+            path.Add(step);
+            step = cameFrom[step];
+        }
+
+        path.Reverse();
+        return path;
+    }
+
+    public Tile GetTile(Vector2Int pos)
+    {
+        return dungeonGenerator.GetTile(pos);
     }
 
     public void ClearHighlights()
@@ -159,6 +238,11 @@ public class GameManager : MonoBehaviour
     {
         if (selectedCharacter == null) return;
 
+        Vector2Int origin = selectedCharacter.gridPosition;
+        int distance = Mathf.Abs(target.x - origin.x) + Mathf.Abs(target.y - origin.y);
+
+        if (distance > selectedCharacter.currentActionPoints) return;
+        if (distance == 0 || distance > 1) return;
         if (!IsWalkable(target)) return;
 
         ClearHighlights();
@@ -207,11 +291,13 @@ public class GameManager : MonoBehaviour
                 Vector2Int target = origin + new Vector2Int(x, y);
                 int distance = Mathf.Abs(x) + Mathf.Abs(y);
 
-                if (distance <= range && IsTileOccupied(target))
+                // Only cross pattern (no diagonals), no self
+                if (distance > 0 && distance <= range && (x == 0 || y == 0))
                 {
-                    Vector3 highlightPos = new Vector3(target.x + 0.5f, target.y + 0.5f, -1f);
+                    Vector3 highlightPos = new Vector3(target.x + 0.5f, target.y - 0.5f, -1f);
+
                     GameObject highlight = Instantiate(moveHighlightPrefab, highlightPos, Quaternion.identity);
-                    highlight.GetComponent<TileHighlight>().Init(target, true); // mark as attackable
+                    highlight.GetComponent<TileHighlight>().Init(target, true); // true = attack
                     activeHighlights.Add(highlight);
                 }
             }
@@ -220,26 +306,33 @@ public class GameManager : MonoBehaviour
 
     public void TryAttackTarget(Vector2Int target)
     {
-        ClearHighlights();
+        if (selectedCharacter == null) return;
 
-        CharacterBase attacker = selectedCharacter;
+        Vector2Int origin = selectedCharacter.gridPosition;
+        int distance = Mathf.Abs(target.x - origin.x) + Mathf.Abs(target.y - origin.y);
+
+        // Valid attack range, only in cross shape
+        if (distance == 0 || distance > selectedCharacter.attackRange ||
+            !(target.x == origin.x || target.y == origin.y)) return;
+
+        // Look for character on the tile
         CharacterBase defender = null;
-
-        foreach (var character in turnManager.TurnOrder)
+        foreach (var c in turnManager.TurnOrder)
         {
-            if (character.gridPosition == target && character != attacker)
+            if (c.gridPosition == target && c != selectedCharacter)
             {
-                defender = character;
+                defender = c;
                 break;
             }
         }
 
         if (defender != null)
         {
-            defender.TakeDamage(attacker.attackDamage);
-            attacker.currentActionPoints--; // cost 1 AP to attack
+            defender.TakeDamage(selectedCharacter.attackDamage);
+            selectedCharacter.currentActionPoints--;
         }
 
+        ClearHighlights();
         selectedCharacter = null;
     }
 
