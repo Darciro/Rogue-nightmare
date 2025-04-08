@@ -31,12 +31,41 @@ public class TurnManager : MonoBehaviour
     /// <summary>
     /// Moves to the next character and starts their turn.
     /// </summary>
-    public void NextTurn()
+    public void NextTurnOLD()
     {
         if (TurnOrder.Count == 0) return;
 
         currentTurnIndex = (currentTurnIndex + 1) % TurnOrder.Count;
+
+        PathPreviewManager.Instance.Clear();
+        GameManager.Instance.ClearHighlights();
+
         TurnOrder[currentTurnIndex].StartTurn();
+    }
+
+    public void NextTurn()
+    {
+
+        if (TurnOrder == null || TurnOrder.Count == 0)
+        {
+            Debug.LogWarning("[TurnManager] No turn order defined!");
+            return;
+        }
+
+        currentTurnIndex = (currentTurnIndex + 1) % TurnOrder.Count;
+
+        CharacterBase next = TurnOrder[currentTurnIndex];
+
+        if (next == null)
+        {
+            Debug.LogError("[TurnManager] Next character is null.");
+            return;
+        }
+        // PathPreviewManager.Instance.Clear();
+        GameManager.Instance.ClearHighlights();
+
+        next.StartTurn();
+        Debug.Log($"[TurnManager] It's now {next.characterName}'s turn.");
     }
 
     /// <summary>

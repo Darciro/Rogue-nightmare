@@ -59,7 +59,9 @@ public abstract class CharacterBase : MonoBehaviour
     public void MoveTo(Vector2Int target)
     {
         var path = GameManager.Instance.FindPath(gridPosition, target, currentActionPoints);
-        if (path == null) return;
+        Debug.Log($"[MoveTo] AP: {currentActionPoints}, Path length: {path?.Count}");
+
+        if (path == null || path.Count == 0) return;
 
         StartCoroutine(MoveAlongPath(path));
     }
@@ -70,10 +72,12 @@ public abstract class CharacterBase : MonoBehaviour
         {
             if (currentActionPoints <= 0) break;
 
-            // Clear old tile
-            GameManager.Instance.GetTile(gridPosition).occupant = null;
+            // Free current tile
+            var currentTile = GameManager.Instance.GetTile(gridPosition);
+            if (currentTile != null)
+                currentTile.occupant = null;
 
-            Vector3 worldPos = GameManager.Instance.GridToWorld(step);
+            Vector3 worldPos = GameManager.Instance.GridToWorld(step); // <- no +0.5f (correct per your setup)
 
             while ((transform.position - worldPos).sqrMagnitude > 0.01f)
             {
@@ -82,14 +86,26 @@ public abstract class CharacterBase : MonoBehaviour
             }
 
             gridPosition = step;
-            GameManager.Instance.GetTile(gridPosition).occupant = this.gameObject;
-            currentActionPoints--;
 
+            var nextTile = GameManager.Instance.GetTile(gridPosition);
+            if (nextTile != null)
+                nextTile.occupant = this.gameObject;
+
+            currentActionPoints--;
             GameManager.Instance.UpdatePlayerUI();
+
+            if (currentActionPoints <= 0)
+            {
+                GameManager.Instance.NextTurn();
+                yield break; // stop movement early if no AP left
+            }
         }
 
+        ActionMenuUI.Instance.ShowActionButtons();
         GameManager.Instance.ClearHighlights();
+        PathPreviewManager.Instance.Clear();
     }
+
 
     public IEnumerator SmoothMove(Vector2Int target)
     {

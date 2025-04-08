@@ -54,6 +54,7 @@ public class ActionMenuUI : MonoBehaviour
     public void OnCancelPressed()
     {
         GameManager.Instance.ClearHighlights();
+        PathPreviewManager.Instance.Clear();
         ShowActionButtons();
     }
 

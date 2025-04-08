@@ -97,9 +97,9 @@ public class GameManager : MonoBehaviour
 
     public void NextTurn()
     {
+        PathPreviewManager.Instance?.Clear();
         turnManager.NextTurn();
         UpdateTurnUI();
-        // UpdateTurnQueueUI();
     }
 
     public void UpdatePlayerUI()
@@ -108,14 +108,14 @@ public class GameManager : MonoBehaviour
         var player = turnManager.CurrentCharacter as PlayerCharacter;
         if (player == null) return;
 
-        healthPointText.text = $"HP: {player.currentHP}/{player.maxHP}";
-        actionPointIndicator.text = $"A/P: {player.currentActionPoints}/{player.maxActionPoints}";
-        foodPointText.text = $"Food: {player.foodPoints}/100";
-        waterPointText.text = $"Water: {player.waterPoints}/100";
+        healthPointText.text = $"{player.currentHP}/{player.maxHP}";
+        actionPointIndicator.text = $"{player.currentActionPoints}/{player.maxActionPoints}";
+        foodPointText.text = $"{player.foodPoints}/100";
+        waterPointText.text = $"{player.waterPoints}/100";
     }
 
 
-    void UpdateTurnUI()
+    public void UpdateTurnUI()
     {
         if (turnIndicator != null && turnManager.CurrentCharacter != null)
         {
@@ -175,6 +175,55 @@ public class GameManager : MonoBehaviour
     }
 
     public List<Vector2Int> FindPath(Vector2Int start, Vector2Int goal, int maxRange)
+    {
+        Queue<Vector2Int> frontier = new();
+        Dictionary<Vector2Int, Vector2Int> cameFrom = new();
+        Dictionary<Vector2Int, int> costSoFar = new();
+
+        frontier.Enqueue(start);
+        cameFrom[start] = start;
+        costSoFar[start] = 0;
+
+        while (frontier.Count > 0)
+        {
+            Vector2Int current = frontier.Dequeue();
+
+            foreach (Vector2Int dir in new[] {
+            Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
+        })
+            {
+                Vector2Int next = current + dir;
+                int newCost = costSoFar[current] + 1;
+
+                if (newCost > maxRange) continue;
+                if (!IsWalkable(next) && next != goal) continue;
+
+                if (!cameFrom.ContainsKey(next))
+                {
+                    frontier.Enqueue(next);
+                    cameFrom[next] = current;
+                    costSoFar[next] = newCost;
+                }
+            }
+        }
+
+        if (!cameFrom.ContainsKey(goal)) return null;
+
+        List<Vector2Int> path = new();
+        Vector2Int step = goal;
+
+        while (step != start)
+        {
+            path.Add(step);
+            step = cameFrom[step];
+        }
+
+        path.Reverse();
+        return path;
+    }
+
+
+    public List<Vector2Int> OLD(Vector2Int start, Vector2Int goal, int maxRange)
     {
         Queue<Vector2Int> frontier = new Queue<Vector2Int>();
         Dictionary<Vector2Int, Vector2Int> cameFrom = new Dictionary<Vector2Int, Vector2Int>();
@@ -242,12 +291,13 @@ public class GameManager : MonoBehaviour
         int distance = Mathf.Abs(target.x - origin.x) + Mathf.Abs(target.y - origin.y);
 
         if (distance > selectedCharacter.currentActionPoints) return;
-        if (distance == 0 || distance > 1) return;
+        if (distance == 0) return;
         if (!IsWalkable(target)) return;
 
-        ClearHighlights();
         selectedCharacter.MoveTo(target);
         selectedCharacter = null;
+
+        ClearHighlights();
     }
 
     public void RemoveCharacter(CharacterBase character)
@@ -256,7 +306,7 @@ public class GameManager : MonoBehaviour
 
         if (turnManager.TurnOrder.Count == 0)
         {
-            Debug.Log("All characters are dead. Game Over!");
+            Debug.Log("ROGUE: All characters are dead. Game Over!");
             gameOverScreen.SetActive(true);
         }
     }
@@ -306,7 +356,16 @@ public class GameManager : MonoBehaviour
 
     public void TryAttackTarget(Vector2Int target)
     {
-        if (selectedCharacter == null) return;
+        if (selectedCharacter != null)
+        {
+            selectedCharacter.currentActionPoints--;
+            ActionMenuUI.Instance.ShowActionButtons();
+
+            if (selectedCharacter.currentActionPoints <= 0)
+            {
+                GameManager.Instance.NextTurn();
+            }
+        }
 
         Vector2Int origin = selectedCharacter.gridPosition;
         int distance = Mathf.Abs(target.x - origin.x) + Mathf.Abs(target.y - origin.y);

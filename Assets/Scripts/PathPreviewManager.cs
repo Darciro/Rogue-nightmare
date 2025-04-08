@@ -4,8 +4,8 @@ using TMPro;
 
 public class PathPreviewManager : MonoBehaviour
 {
-    public GameObject arrowPrefab;
-    private List<GameObject> activeArrows = new List<GameObject>();
+    public GameObject previewTilePrefab;
+    private List<GameObject> activePreviews = new List<GameObject>();
 
     public static PathPreviewManager Instance;
 
@@ -20,32 +20,33 @@ public class PathPreviewManager : MonoBehaviour
 
         for (int i = 0; i < path.Count; i++)
         {
-            Vector2Int from = i > 0 ? path[i - 1] : path[0];
             Vector2Int to = path[i];
-            Vector2 dir = (to - from);
-
             Vector3 worldPos = GameManager.Instance.GridToWorld(to) + new Vector3(0.5f, -0.5f, 0f);
-            GameObject arrow = Instantiate(arrowPrefab, worldPos, Quaternion.identity);
+            GameObject previewTileActive = Instantiate(previewTilePrefab, worldPos, Quaternion.identity);
 
-            // Rotate arrow based on direction
-            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-            arrow.transform.rotation = Quaternion.Euler(0, 0, angle - 90); // Assumes up-facing arrow sprite
+            /* var sprite = previewTileActive.GetComponentInChildren<SpriteRenderer>();
+            if (sprite != null)
+            {
+                if (i == 1) sprite.color = Color.green;
+                else if (i < 2) sprite.color = Color.yellow;
+                else sprite.color = Color.red;
+            } */
 
-            // Show AP cost
-            var label = arrow.GetComponentInChildren<TextMeshPro>();
-            if (label != null)
-                label.text = (i + 1).ToString(); // AP cost = tile number
+            TextMeshProUGUI actionPointsLabel = previewTileActive.GetComponentInChildren<TextMeshProUGUI>();
+            Debug.Log($"[ROGUE]: {actionPointsLabel}, A/P: {i}");
+            if (actionPointsLabel != null)
+                actionPointsLabel.text = (i + 1).ToString() + "A/P";
 
-            activeArrows.Add(arrow);
+            activePreviews.Add(previewTileActive);
         }
     }
 
     public void Clear()
     {
-        foreach (GameObject arrow in activeArrows)
+        foreach (GameObject tile in activePreviews)
         {
-            Destroy(arrow);
+            Destroy(tile);
         }
-        activeArrows.Clear();
+        activePreviews.Clear();
     }
 }

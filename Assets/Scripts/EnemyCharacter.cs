@@ -28,13 +28,11 @@ public class EnemyCharacter : CharacterBase
             PlayerCharacter target = FindNearestPlayer();
             if (target == null)
             {
-                Debug.LogWarning($"{characterName} found no target.");
                 break;
             }
 
             if (IsAdjacent(target.gridPosition))
             {
-                Debug.Log($"{characterName} attacks {target.characterName}!");
                 target.TakeDamage(attackDamage);
                 yield return new WaitForSeconds(0.5f); // simulate attack delay
                 break; // For now: attack ends turn
@@ -45,12 +43,10 @@ public class EnemyCharacter : CharacterBase
 
             if (GameManager.Instance.IsWalkable(newPos))
             {
-                Debug.Log($"{characterName} moves to {newPos}");
                 yield return StartCoroutine(SmoothMove(newPos));
             }
             else
             {
-                Debug.Log($"{characterName} blocked at {newPos}, ending turn.");
                 break;
             }
 
