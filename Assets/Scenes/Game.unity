@@ -892,7 +892,7 @@ MonoBehaviour:
   attackButton: {fileID: 1036774599}
   itemButton: {fileID: 1064758537}
   cancelButton: {fileID: 213269274}
-  playerStatsUI: {fileID: 1657738838}
+  playerStatsPanel: {fileID: 0}
 --- !u!1 &270539769
 GameObject:
   m_ObjectHideFlags: 0
@@ -1615,25 +1615,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e32981c1a355ea144ac07f5ac87b5823, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tileSize: 1
-  turnIndicator: {fileID: 529669518}
-  turnsOrder: {fileID: 100259228}
-  actionPointIndicator: {fileID: 270539771}
-  gameOverScreen: {fileID: 807497169}
-  damagePopupPrefab: {fileID: 48411379940296273, guid: 2ea07a779cdf0ae448ba579def78d9d1, type: 3}
+  turnIndicatorText: {fileID: 529669518}
+  turnOrderText: {fileID: 100259228}
+  actionPointText: {fileID: 270539771}
   healthPointText: {fileID: 1399537720}
   foodPointText: {fileID: 1114400447}
   waterPointText: {fileID: 1136358982}
-  dungeonWrapper: {fileID: 564808123}
-  dungeonGenerator: {fileID: 8672293558007079007, guid: 0d395ded3337e5748b32c29e29b54cc8, type: 3}
-  moveHighlightPrefab: {fileID: 5003580271780544440, guid: bf4783f4f1b04b74da8490350ebaf984, type: 3}
-  entityParent: {fileID: 94989155}
+  gameOverScreen: {fileID: 807497169}
+  damagePopupPrefab: {fileID: 48411379940296273, guid: 2ea07a779cdf0ae448ba579def78d9d1, type: 3}
+  dungeonManager: {fileID: 8672293558007079007, guid: 0d395ded3337e5748b32c29e29b54cc8, type: 3}
+  dungeonParent: {fileID: 564808123}
   playerPrefab: {fileID: 3178630670732328430, guid: 7bf797d05c34d5b4eaa7098b464c534d, type: 3}
   enemyPrefabs:
   - {fileID: 221223141895747919, guid: 4e5bff9933751254c90b3398c27c3940, type: 3}
   - {fileID: 5015161675580388998, guid: ade24fc67f0381840822fb9bddde940a, type: 3}
   pickupPrefabs: []
-  wallPrefabs: []
+  moveHighlightPrefab: {fileID: 5003580271780544440, guid: bf4783f4f1b04b74da8490350ebaf984, type: 3}
+  attackHighlightPrefab: {fileID: 5003580271780544440, guid: bf4783f4f1b04b74da8490350ebaf984, type: 3}
   turnManager: {fileID: 6038623538646378723, guid: 3116fa5ba850ad146875ebe3cf2afd22, type: 3}
 --- !u!4 &726697221
 Transform:

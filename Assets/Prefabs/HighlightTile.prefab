@@ -78,9 +78,9 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1083323927
   m_SortingLayer: 1
-  m_SortingOrder: 1
+  m_SortingOrder: 10
   m_Sprite: {fileID: 7482667652216324306, guid: db750325989564987a34393247d883b4, type: 3}
-  m_Color: {r: 0.25, g: 0.30989712, b: 1, a: 0.039215688}
+  m_Color: {r: 0, g: 0.83468914, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -102,6 +102,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e8fadeb5cb2d2f49ba79e5f5d3f5fac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gridPosition: {x: 0, y: 0}
+  isAttackTile: 0
+  moveSprite: {fileID: 21300000, guid: 3faced3f533517b4abdcc53f48a87464, type: 3}
+  attackSprite: {fileID: 21300000, guid: 3faced3f533517b4abdcc53f48a87464, type: 3}
 --- !u!61 &8375814602238733698
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -155,7 +159,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5003580271780544440}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4974428e01282045abb72fe52bebff5, type: 3}
   m_Name: 
