@@ -21,7 +21,7 @@ public class PathPreviewManager : MonoBehaviour
         for (int i = 0; i < path.Count; i++)
         {
             Vector2Int to = path[i];
-            Vector3 worldPos = GameManager.Instance.GridToWorld(to) + new Vector3(0.5f, -0.5f, 0f);
+            Vector3 worldPos = GameManager.Instance.GridToWorld(to);
             GameObject previewTileActive = Instantiate(previewTilePrefab, worldPos, Quaternion.identity);
 
             /* var sprite = previewTileActive.GetComponentInChildren<SpriteRenderer>();

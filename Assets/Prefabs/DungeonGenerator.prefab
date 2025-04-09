@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 5800263424063666948}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.5718446, y: -2.1133065, z: -9.993143}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -46,7 +46,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dungeonWidth: 16
   dungeonHeight: 32
-  minRoomSize: 3
+  minRoomSize: 4
   maxRoomSize: 12
-  floorPrefab: {fileID: 1701433753744369536, guid: 529cbebfaed67cb4780bc46c64e07aaa, type: 3}
-  wallPrefab: {fileID: 6652453479493337421, guid: 8df897a7c7e2d0f4b8f16ac455a6addf, type: 3}
+  floorPrefabs:
+  - {fileID: 7785273319781729871, guid: b68569732cbcdd540a5c280fee255926, type: 3}
+  - {fileID: 9121815708208600990, guid: 9c9ef7322d4935c48ac6ff864a76d30b, type: 3}
+  - {fileID: 7840645454749880401, guid: edd0266d7026cb6419c3beaec338074b, type: 3}
+  - {fileID: 6756053748446717716, guid: 585c13bcea3f711468a144c41078486e, type: 3}
+  - {fileID: 8547655115508585602, guid: 9e48cd413356c3840a111ac17eb48a19, type: 3}
+  - {fileID: 8550602389909853025, guid: 65238b1e5654435438c659bf52531133, type: 3}
+  - {fileID: 6163760161405794860, guid: 8921b1e9ff0b2a548ba5d7039e1bb90f, type: 3}
+  wallBodyPrefab: {fileID: 2978533269513272359, guid: a11ea5ae1e4980648a96c97bf695d18e, type: 3}
+  wallTopCapPrefab: {fileID: 6000366270760052041, guid: 54a45d380be66384ea7ccb4f40eb2655, type: 3}
+  wallHorizontalPrefab: {fileID: 2978533269513272359, guid: a11ea5ae1e4980648a96c97bf695d18e, type: 3}
+  wallVerticalPrefab: {fileID: 8520520249420994026, guid: d3049f2572831264ba8a7068acee4d64, type: 3}
+  wallInnerCornerPrefab: {fileID: 4578734095432145755, guid: fa4cd1f932829414693bb5a5596a6d2c, type: 3}
+  wallOuterCornerPrefab: {fileID: 8818274791855650654, guid: 321a02b5fe853664f95e3edecae5dc3b, type: 3}
+  wallTopLayerPrefab: {fileID: 6000366270760052041, guid: 54a45d380be66384ea7ccb4f40eb2655, type: 3}

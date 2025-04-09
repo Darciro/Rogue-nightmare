@@ -124,7 +124,7 @@ public class GameManager : MonoBehaviour
 
         if (actionPointIndicator != null && turnManager.CurrentCharacter != null)
         {
-            actionPointIndicator.text = $"A/P: {turnManager.CurrentCharacter.currentActionPoints}/3";
+            // actionPointIndicator.text = $"A/P: {turnManager.CurrentCharacter.currentActionPoints}/3";
         }
 
         UpdatePlayerUI(); // ✅ Add this
@@ -163,7 +163,7 @@ public class GameManager : MonoBehaviour
                     var path = FindPath(origin, target, range);
                     if (path != null)
                     {
-                        Vector3 highlightPos = new Vector3(target.x + 0.5f, target.y - 0.5f, -1f);
+                        Vector3 highlightPos = new Vector3(target.x, target.y, -1f);
                         GameObject highlight = Instantiate(moveHighlightPrefab, highlightPos, Quaternion.identity);
                         highlight.GetComponent<TileHighlight>().Init(target);
                         activeHighlights.Add(highlight);
@@ -344,7 +344,7 @@ public class GameManager : MonoBehaviour
                 // Only cross pattern (no diagonals), no self
                 if (distance > 0 && distance <= range && (x == 0 || y == 0))
                 {
-                    Vector3 highlightPos = new Vector3(target.x + 0.5f, target.y - 0.5f, -1f);
+                    Vector3 highlightPos = new Vector3(target.x, target.y, -1f);
 
                     GameObject highlight = Instantiate(moveHighlightPrefab, highlightPos, Quaternion.identity);
                     highlight.GetComponent<TileHighlight>().Init(target, true); // true = attack
@@ -359,6 +359,7 @@ public class GameManager : MonoBehaviour
         if (selectedCharacter != null)
         {
             selectedCharacter.currentActionPoints--;
+            UpdateTurnUI();
             ActionMenuUI.Instance.ShowActionButtons();
 
             if (selectedCharacter.currentActionPoints <= 0)
